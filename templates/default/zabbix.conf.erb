@@ -1,0 +1,4 @@
+<VirtualHost *:<%= @params[:server_port] %>>
+  DocumentRoot <%= @params[:template_variables][:document_root] %>
+  ServerName <%= @params[:template_variables][:server_name] %>
+</VirtualHost>
