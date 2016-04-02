@@ -45,7 +45,7 @@ end
   end
 
   service "zabbix-agent" do
-    action [:enable :nothing]
+    action [:enable, :nothing]
   end
 
   template '/etc/zabbix/zabbix_agentd.conf' do
