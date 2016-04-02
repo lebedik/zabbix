@@ -1,6 +1,6 @@
 if node['platform'] == 'centos'
 
-hostname = "#{getInstanceTag('name')}"
+hostname = node['fqdn']
 
 
   if node['platform_version'].to_i >= 7
