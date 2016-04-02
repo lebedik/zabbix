@@ -2,6 +2,7 @@ if node['platform'] == 'centos'
 
 hostname = node['fqdn']
 
+
 if node.role?('db-server')
   metadataitem = 'db'
 elsif node.role?('app-server')
@@ -12,7 +13,9 @@ elsif node.role?('zabbix-srv')
   metadataitem = 'zbx'
 end
 
-
+execute 'zabbix_api_install' do
+        command '/opt/chef/embedded/bin/gem install zabbixapi'
+end
 
   if node['platform_version'].to_i >= 7
       zabbix_release = "#{Chef::Config[:file_cache_path]}/zabbix-release-3.0-1.el7.noarch.rpm"
@@ -34,6 +37,82 @@ end
     subscribes :install, "remote_file[#{zabbix_release}]"
   end
 
+# Create host on zabbix server
+ruby_block "create_host" do
+  block do
+require "zabbixapi"
+
+zbx = ZabbixApi.connect(
+  :url => "http://#{node['zabbix']['zabbixServerAddress']}/api_jsonrpc.php",
+  :user => 'Admin',
+  :password => 'zabbix'
+)
+
+# create group
+if zbx.hostgroups.get_id(:name => "global-group") == nil
+  Chef::Log.info ("================================")
+  Chef::Log.info ("create global-group")
+  Chef::Log.info ("================================")
+  zbx.hostgroups.create(:name => "global-group")
+end
+
+# create hosts
+Chef::Log.info ("================================")
+Chef::Log.info (zbx.hosts.get_id(:host => "#{node['fqdn']}"))
+Chef::Log.info ("================================")
+
+
+
+if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
+
+  zbx.hosts.delete zbx.hosts.get_id(:host => "#{node['fqdn']}")
+
+  zbx.hosts.create(
+    :host => "#{node['fqdn']}",
+    :interfaces => [
+      {
+        :type => 1,
+        :main => 1,
+        :ip => "#{node[:network][:interfaces][:eth1][:addresses].detect{|k,v| v[:family] == "inet" }.first}",
+        :dns => "#{node['fqdn']}",
+        :port => 10050,
+        :useip => 1
+      }
+    ],
+    :groups => [ :groupid => zbx.hostgroups.get_id(:name => "global-group") ]
+  )
+
+  zbx.templates.mass_add(
+    :hosts_id => [zbx.hosts.get_id(:host => "#{node['fqdn']}")],
+    :templates_id => [10001]
+  )
+  else
+    zbx.hosts.create(
+      :host => "#{node['fqdn']}",
+      :interfaces => [
+        {
+          :type => 1,
+          :main => 1,
+          :ip => "#{node[:network][:interfaces][:eth1][:addresses].detect{|k,v| v[:family] == "inet" }.first}",
+          :dns => "#{node['fqdn']}",
+          :port => 10050,
+          :useip => 1
+        }
+      ],
+      :groups => [ :groupid => zbx.hostgroups.get_id(:name => "global-group") ]
+    )
+
+    zbx.templates.mass_add(
+      :hosts_id => [zbx.hosts.get_id(:host => "#{node['fqdn']}")],
+      :templates_id => [10001]
+    )
+
+end
+  end
+  #ignore_failure true
+end
+
+
   # execute "clear_cache" do
   #   command "/usr/bin/yum clean all"
   #   action :run
@@ -48,21 +127,6 @@ end
     action [:enable, :nothing]
   end
 
- directory "#{node['zabbix']['agent']['HomeDir']}" do
-  mode '0755'
-  owner "zabbix"
-  group "zabbix"
-  action :create
- end
- 
- file "#{node['zabbix']['agent']['TLSPSKFile']}" do
-  owner "zabbix"
-  group "zabbix"
-  mode '0440'
-  content "#{node['zabbix']['agent']['TLSPSKKey']}"
- end
-
-
   template '/etc/zabbix/zabbix_agentd.conf' do
     source "zabbix_agentd.conf.erb"
     mode '0640'
@@ -71,11 +135,8 @@ end
     variables lazy { ({
       :metadataitem => metadataitem,
       :hostname => hostname,
-      :server_ip => "#{node['zabbix']['zabbixServerAddress']}",
-      :TLSPSKIdentity => "#{node['zabbix']['agent']['TLSPSKIdentity']}",
-      :TLSPSKFile => "#{node['zabbix']['agent']['TLSPSKFile']}",
-      :encryption => "#{node['zabbix']['agent']['encryption']}"
+      :server_ip => "#{node['zabbix']['zabbixServerAddress']}"
         }) }
-    notifies :restart, 'service[zabbix-agent]', :delayed
+    notifies :start, 'service[zabbix-agent]', :delayed
   end
 end
