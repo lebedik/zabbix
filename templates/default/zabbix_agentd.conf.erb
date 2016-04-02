@@ -9,7 +9,7 @@ Server=<%= @server_ip %>
 ServerActive=<%= @server_ip %>
 Hostname=<%= @hostname %>
 
-<% if @encryption == true %>
+<% if @node['zabbix']['agent']['encryption'] == true %>
 TLSConnect=psk
 TLSAccept=psk
 TLSPSKFile=<%= @TLSPSKFile %>
