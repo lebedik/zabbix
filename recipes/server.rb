@@ -185,6 +185,12 @@ web_app 'zabbix' do
     :server_name => node['fqdn']
   })
 end
+
+
+['zabbix-java-gateway'].each do |pkg|
+  package pkg
+end
+
 # install mod_php5
 include_recipe 'apache2::mod_php5'
 
@@ -197,6 +203,12 @@ include_recipe 'apache2::mod_php5'
     action :create
     source "file://#{Chef::Config[:file_cache_path]}/zabbix-#{zabbix_version}/misc/init.d/fedora/core/#{init_script}"
   end
+  service init_script do
+    action [:restart, :enable]
+  end
+end
+
+['zabbix-java-gateway'].each do |init_script|
   service init_script do
     action [:restart, :enable]
   end
