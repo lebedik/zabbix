@@ -34,7 +34,7 @@ hostname = node['fqdn']
   end
 
   service "zabbix-agent" do
-    action :nothing
+    action [:nothing, :enable]
   end
 
   template '/etc/zabbix/zabbix_agentd.conf' do
