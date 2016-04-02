@@ -1,6 +1,6 @@
 node.default['zabbix']['zabbixServerAddress'] = '192.168.33.200'
 
-node.default['zabbix']['agent']['encryption'] = true
+node.default['zabbix']['agent']['encryption'] = false
 node.default['zabbix']['agent']['HomeDir'] = "/home/zabbix/"
 node.default['zabbix']['agent']['TLSPSKIdentity'] = "Team3"
 node.default['zabbix']['agent']['TLSPSKFile'] = "/home/zabbix/zabbix_agentd.psk"
