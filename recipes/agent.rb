@@ -71,7 +71,10 @@ end
     variables lazy { ({
       :metadataitem => metadataitem,
       :hostname => hostname,
-      :server_ip => "#{node['zabbix']['zabbixServerAddress']}"
+      :server_ip => "#{node['zabbix']['zabbixServerAddress']}",
+      :TLSPSKIdentity => "#{node['zabbix']['agent']['TLSPSKIdentity']}",
+      :TLSPSKFile => "#{node['zabbix']['agent']['TLSPSKFile']}",
+      :encryption => "#{node.default['zabbix']['agent']['encryption']}"
         }) }
     notifies :restart, 'service[zabbix-agent]', :delayed
   end
