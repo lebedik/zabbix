@@ -117,6 +117,10 @@ end
   #   command "/usr/bin/yum clean all"
   #   action :run
   # end
+  yum_package "zabbix-agent"  do
+     flush_cache [ :before ]
+     action :install
+  end
 
   service "zabbix-agent" do
     action [:enable, :nothing]
