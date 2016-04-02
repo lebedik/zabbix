@@ -231,7 +231,7 @@ end
 
 
 service 'zabbix-java-gateway' do
-  action :restart
+  action [:start, :enable]
   ignore_failure true
 end
 
