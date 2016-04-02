@@ -229,10 +229,9 @@ include_recipe 'apache2::mod_php5'
   end
 end
 
-['zabbix-java-gateway'].each do |init_script|
-  service init_script do
-    action [:restart, :enable]
-  end
+
+service 'zabbix-java-gateway' do
+  action :restart
 end
 
 # create zabbix application configuration file
