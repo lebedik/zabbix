@@ -1,1 +1,1 @@
-node['zabbix']['zabbixServerAddress'] = '192.168.33.200'
+node.default['zabbix']['zabbixServerAddress'] = '192.168.33.200'
