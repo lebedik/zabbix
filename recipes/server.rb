@@ -187,6 +187,27 @@ web_app 'zabbix' do
 end
 
 
+if node['platform_version'].to_i >= 7
+  zabbix_release = "#{Chef::Config[:file_cache_path]}/zabbix-release-3.0-1.el7.noarch.rpm"
+  source = "http://repo.zabbix.com/zabbix/3.0/rhel/7/x86_64/zabbix-release-3.0-1.el7.noarch.rpm"
+else
+  zabbix_release = "#{Chef::Config[:file_cache_path]}/zabbix-release-3.0-1.el7.noarch.rpm"
+  source = "http://repo.zabbix.com/zabbix/3.0/rhel/6/x86_64/zabbix-release-3.0-1.el6.noarch.rpm"
+end
+
+
+remote_file zabbix_release do
+  source source
+  action :create_if_missing
+end
+
+rpm_package "zabbix-release" do
+  source "#{zabbix_release}"
+  action :install
+  subscribes :install, "remote_file[#{zabbix_release}]"
+end
+
+
 ['zabbix-java-gateway'].each do |pkg|
   package pkg
 end
