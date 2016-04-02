@@ -118,14 +118,24 @@ end
   #   action :run
   # end
 
-  yum_package "zabbix-agent"  do
-    flush_cache [ :before ]
-    action :install
-  end
-
   service "zabbix-agent" do
     action [:enable, :nothing]
   end
+
+ directory "#{node['zabbix']['agent']['HomeDir']}" do
+  mode '0755'
+  owner "zabbix"
+  group "zabbix"
+  action :create
+ end
+ 
+ file "#{node['zabbix']['agent']['TLSPSKFile']}" do
+  owner "zabbix"
+  group "zabbix"
+  mode '0440'
+  content "#{node['zabbix']['agent']['TLSPSKKey']}"
+ end
+
 
   template '/etc/zabbix/zabbix_agentd.conf' do
     source "zabbix_agentd.conf.erb"
@@ -135,7 +145,10 @@ end
     variables lazy { ({
       :metadataitem => metadataitem,
       :hostname => hostname,
-      :server_ip => "#{node['zabbix']['zabbixServerAddress']}"
+      :server_ip => "#{node['zabbix']['zabbixServerAddress']}",
+      :TLSPSKIdentity => "#{node['zabbix']['agent']['TLSPSKIdentity']}",
+      :TLSPSKFile => "#{node['zabbix']['agent']['TLSPSKFile']}",
+      :encryption => "#{node['zabbix']['agent']['encryption']}"
         }) }
     notifies :restart, 'service[zabbix-agent]', :delayed
   end
