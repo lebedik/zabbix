@@ -2,36 +2,16 @@ if node['platform'] == 'centos'
 
 hostname = node['fqdn']
 
-# Install zabbixapi gem
-execute 'zabbix_api_install' do
-        command '/opt/chef/embedded/bin/gem install zabbixapi'
+if node.role?('db-server')
+  metadataitem = 'db'
+elsif node.role?('app-server')
+  metadataitem = 'app'
+elsif node.role?('web-server')
+  metadataitem = 'web'
+elsif node.role?('zabbix-srv')
+  metadataitem = 'zbx'
 end
 
-# Create host on zabbix server
-ruby "create_host" do
-code <<-EOH
-require "zabbixapi"
-        zbx = ZabbixApi.connect(
-  :url => "http://#{node['zabbix']['zabbixServerAddress']}/api_jsonrpc.php",
-  :user => 'Admin',
-  :password => 'zabbix'
-)
-zbx.hosts.create_or_update(
-  :host => "#{node['fqdn']}",
-  :interfaces => [
-    {
-      :type => 1,
-      :main => 1,
-      :ip => "#{node['ipaddress']}",
-      :dns => "#{node['fqdn']}",
-      :port => 10050,
-      :useip => 0
-    }
-  ],
-  :groups => [ :groupid => zbx.hostgroups.get_id(:name => "db-test") ]
-)
-EOH
-end
 
 
   if node['platform_version'].to_i >= 7
@@ -74,6 +54,7 @@ end
     owner 'zabbix'
     group 'zabbix'
     variables lazy { ({
+      :metadataitem => metadataitem,
       :hostname => hostname,
       :server_ip => "#{node['zabbix']['zabbixServerAddress']}"
         }) }
