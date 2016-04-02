@@ -12,8 +12,8 @@ Hostname=<%= @hostname %>
 <% if @encryption == true %>
 TLSConnect=psk
 TLSAccept=psk
-TLSPSKFile=<% @TLSPSKFile %>
-TLSPSKIdentity=<% @TLSPSKIdentity %>
+TLSPSKFile=<%= @TLSPSKFile %>
+TLSPSKIdentity=<%= @TLSPSKIdentity %>
 <% end %>
 
 Include=/etc/zabbix/zabbix_agentd.d/

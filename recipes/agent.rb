@@ -74,7 +74,7 @@ end
       :server_ip => "#{node['zabbix']['zabbixServerAddress']}",
       :TLSPSKIdentity => "#{node['zabbix']['agent']['TLSPSKIdentity']}",
       :TLSPSKFile => "#{node['zabbix']['agent']['TLSPSKFile']}",
-      :encryption => "#{node.default['zabbix']['agent']['encryption']}"
+      :encryption => "#{node['zabbix']['agent']['encryption']}"
         }) }
     notifies :restart, 'service[zabbix-agent]', :delayed
   end
