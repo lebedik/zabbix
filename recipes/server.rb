@@ -232,6 +232,7 @@ end
 
 service 'zabbix-java-gateway' do
   action :restart
+  ignore_failure true
 end
 
 # create zabbix application configuration file
