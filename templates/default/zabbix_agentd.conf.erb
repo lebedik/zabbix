@@ -9,5 +9,12 @@ Server=<%= @server_ip %>
 ServerActive=<%= @server_ip %>
 Hostname=<%= @hostname %>
 
+<% if @node['zabbix']['agent']['encryption'] == true %>
+TLSConnect=psk
+TLSAccept=psk
+TLSPSKFile=<% @node['zabbix']['agent']['TLSPSKFile'] %>
+TLSPSKIdentity=<% @node['zabbix']['agent']['TLSPSKIdentity'] %>
+<% end %>
+
 Include=/etc/zabbix/zabbix_agentd.d/
 HostMetadata=<%= @metadataitem %>

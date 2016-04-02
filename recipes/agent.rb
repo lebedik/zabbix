@@ -48,6 +48,21 @@ end
     action [:enable, :nothing]
   end
 
+ directory "#{node['zabbix']['agent']['HomeDir']}" do
+  mode '0755'
+  owner "zabbix"
+  group "zabbix"
+  action :create
+ end
+ 
+ file "#{node['zabbix']['agent']['TLSPSKFile']}" do
+  owner "zabbix"
+  group "zabbix"
+  mode '0440'
+  content "#{node['zabbix']['agent']['TLSPSKKey']}"
+ end
+
+
   template '/etc/zabbix/zabbix_agentd.conf' do
     source "zabbix_agentd.conf.erb"
     mode '0640'
