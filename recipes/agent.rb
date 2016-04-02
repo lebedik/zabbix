@@ -44,7 +44,7 @@ hostname = "#{getInstanceTag('name')}"
     group 'zabbix'
     variables lazy { ({
       :hostname => hostname,
-      :server_ip => "#{node['sap-zabbix']['zabbixServerAddress']}"
+      :server_ip => "#{node['zabbix']['zabbixServerAddress']}"
         }) }
     notifies :restart, 'service[zabbix-agent]', :delayed
   end
