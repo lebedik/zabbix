@@ -137,6 +137,6 @@ end
       :hostname => hostname,
       :server_ip => "#{node['zabbix']['zabbixServerAddress']}"
         }) }
-    notifies :start, 'service[zabbix-agent]', :delayed
+    notifies :restart, 'service[zabbix-agent]', :delayed
   end
 end
