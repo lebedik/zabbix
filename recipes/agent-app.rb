@@ -1,6 +1,7 @@
 if node['platform'] == 'centos'
 
 hostname = node['fqdn']
+zabbix_srv_hostname = node['epc-provisioning']['instances'].find { |i| i[1]['role'] == 'zabbix' }[1]['private_ip_address']
 
 if node.role?('db-server')
   metadataitem = 'db'
@@ -12,8 +13,9 @@ elsif node.role?('zabbix-srv')
   metadataitem = 'zbx'
 end
 
-execute 'zabbix_api_install' do
-        command '/opt/chef/embedded/bin/gem install zabbixapi'
+gem_package 'zabbixapi' do
+  gem_binary '/opt/chef/embedded/bin/gem'
+  action :install
 end
 
   if node['platform_version'].to_i >= 7
@@ -41,7 +43,7 @@ end
 
       require "zabbixapi"
       zbx = ZabbixApi.connect(
-        :url => "http://#{node['zabbix']['zabbixServerAddress']}/api_jsonrpc.php",
+        :url => "http://#{zabbix_srv_hostname}/api_jsonrpc.php",
         :user => 'Admin',
         :password => 'zabbix'
       )
@@ -89,7 +91,7 @@ if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
       {
         :type => 1,
         :main => 1,
-        :ip => "#{node[:network][:interfaces][:eth1][:addresses].detect{|k,v| v[:family] == "inet" }.first}",
+        :ip => "#{node['ipaddress']}",
         :dns => "#{node['fqdn']}",
         :port => 10050,
         :useip => 1
@@ -97,7 +99,7 @@ if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
       {
         :type => 4,
         :main => 1,
-        :ip => "#{node[:network][:interfaces][:eth1][:addresses].detect{|k,v| v[:family] == "inet" }.first}",
+        :ip => "#{node['ipaddress']}",
         :dns => "#{node['fqdn']}",
         :port => 8090,
         :useip => 1
@@ -122,7 +124,7 @@ if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
         {
           :type => 1,
           :main => 1,
-          :ip => "#{node[:network][:interfaces][:eth1][:addresses].detect{|k,v| v[:family] == "inet" }.first}",
+          :ip => "#{node['ipaddress']}",
           :dns => "#{node['fqdn']}",
           :port => 10050,
           :useip => 1
@@ -130,7 +132,7 @@ if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
         {
           :type => 4,
           :main => 1,
-          :ip => "#{node[:network][:interfaces][:eth1][:addresses].detect{|k,v| v[:family] == "inet" }.first}",
+          :ip => "#{node['ipaddress']}",
           :dns => "#{node['fqdn']}",
           :port => 8090,
           :useip => 1
@@ -171,6 +173,14 @@ end
   group "zabbix"
   action :create
  end
+ 
+ directory '/etc/zabbix/scripts' do		
+  owner 'zabbix'		
+  group 'zabbix'		
+  mode 00755		
+  recursive true		
+  action :create		
+end
 
  file "#{node['zabbix']['agent']['TLSPSKFile']}" do
   owner "zabbix"
@@ -194,5 +204,41 @@ end
       :encryption => "#{node['zabbix']['agent']['encryption']}"
         }) }
     notifies :restart, 'service[zabbix-agent]', :delayed
+  end
+  
+   # Add apache status config		
+  if node.role?('web-server')		
+    cookbook_file '/etc/httpd/sites-enabled/000_apache_status.conf' do		
+      source '000-apache-status.conf'		
+      owner 'apache'		
+      group 'apache'		
+      mode 00644		
+      notifies :restart, 'service[zabbix-agent]', :delayed		
+    end		
+		
+    directory '/etc/zabbix/scripts' do		
+      owner 'zabbix'		
+      group 'zabbix'		
+      mode 00755		
+      recursive true		
+      action :create		
+      notifies :restart, 'service[zabbix-agent]', :delayed		
+    end		
+		
+    cookbook_file '/etc/zabbix/scripts/zapache' do		
+      source 'zapache'		
+      owner 'zabbix'		
+      group 'zabbix'		
+      mode 00755		
+      notifies :restart, 'service[zabbix-agent]', :delayed		
+    end		
+		
+    cookbook_file '/etc/zabbix/zabbix_agentd.d/userparameter_zapache.conf' do		
+      source 'userparameter_zapache.conf'		
+      owner 'zabbix'		
+      group 'zabbix'		
+      mode 00644		
+      notifies :restart, 'service[zabbix-agent]', :delayed		
+    end		
   end
 end
