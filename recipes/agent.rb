@@ -135,6 +135,14 @@ end
   action :create
  end
 
+directory '/etc/zabbix/scripts' do
+  owner 'zabbix'
+  group 'zabbix'
+  mode 00755
+  recursive true
+  action :create
+end
+
  file "#{node['zabbix']['agent']['TLSPSKFile']}" do
   owner "zabbix"
   group "zabbix"
@@ -158,4 +166,41 @@ end
         }) }
     notifies :restart, 'service[zabbix-agent]', :delayed
   end
+
+  # Add apache status config
+  if node.role?('web-server')
+    cookbook_file '/etc/httpd/sites-enabled/000_apache_status.conf' do
+      source '000_apache_status.conf'
+      owner 'apache'
+      group 'apache'
+      mode 00644
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    directory '/etc/zabbix/scripts' do
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00755
+      recursive true
+      action :create
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    cookbook_file '/etc/zabbix/scripts/zapache' do
+      source 'zapache'
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00755
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    cookbook_file '/etc/zabbix/zabbix_agentd.d/userparameter_zapache.conf' do
+      source 'userparameter_zapache.conf'
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00644
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+  end
+
 end
