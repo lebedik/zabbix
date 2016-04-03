@@ -1,3 +1,5 @@
+zabbix_srv_hostname = search('node', "name:zabbix-srv").first['ipaddress']
+
 # Install zabbixapi gem
 gem_package 'zabbixapi' do
   gem_binary '/opt/chef/embedded/bin/gem'
@@ -15,7 +17,7 @@ ruby_block "import_template" do
 block do
 require "zabbixapi"
 zbx = ZabbixApi.connect(
-  :url => "http://#{node['ipaddress']}/api_jsonrpc.php",
+  :url => "http://#{zabbix_srv_hostname}/api_jsonrpc.php",
   :user => 'Admin',
   :password => 'zabbix'
 )
