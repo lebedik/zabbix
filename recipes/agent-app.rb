@@ -198,7 +198,7 @@ end
     variables lazy { ({
       :metadataitem => metadataitem,
       :hostname => hostname,
-      :server_ip => "#{node['zabbix']['zabbixServerAddress']}",
+      :server_ip => "#{zabbix_srv_hostname]}",
       :TLSPSKIdentity => "#{node['zabbix']['agent']['TLSPSKIdentity']}",
       :TLSPSKFile => "#{node['zabbix']['agent']['TLSPSKFile']}",
       :encryption => "#{node['zabbix']['agent']['encryption']}"
