@@ -10,27 +10,110 @@ cookbook_file "#{Chef::Config[:file_cache_path]}/linux_os.xml" do
 end
 
 
-ruby "import_template" do
-code <<-EOH
+ruby_block "import_template" do
+block do
 require "zabbixapi"
 zbx = ZabbixApi.connect(
   :url => "http://#{node['zabbix']['zabbixServerAddress']}/api_jsonrpc.php",
   :user => 'Admin',
   :password => 'zabbix'
 )
+
+
+
 zbx.configurations.import(
     :format => "xml",
     :rules => {
-        :templates => {
-            :createMissing => true,
-            :updateExisting => true
-        },
-        :items => {
-            :createMissing => true,
-            :updateExisting => true
-        }
+          :templates => {
+              :createMissing => true,
+              :updateExisting => true
+          }
     },
-:source => "#{Chef::Config[:file_cache_path]}/linux_os.xml"
+:source => File.read("#{Chef::Config[:file_cache_path]}/linux_os.xml")
 )
-EOH
+zbx.configurations.import(
+    :format => "xml",
+    :rules => {
+      :templates => {
+          :createMissing => true,
+          :updateExisting => true
+      },
+      :applications => {
+          :createMissing => true,
+          :updateExisting => true
+      }
+    },
+:source => File.read("#{Chef::Config[:file_cache_path]}/linux_os.xml")
+)
+zbx.configurations.import(
+    :format => "xml",
+    :rules => {
+      :templates => {
+          :createMissing => true,
+          :updateExisting => true
+      },
+      :items => {
+          :createMissing => true,
+          :updateExisting => true
+      }
+    },
+:source => File.read("#{Chef::Config[:file_cache_path]}/linux_os.xml")
+)
+zbx.configurations.import(
+    :format => "xml",
+    :rules => {
+      :templates => {
+          :createMissing => true,
+          :updateExisting => true
+      },
+      :triggers => {
+          :createMissing => true,
+          :updateExisting => true
+      }
+    },
+:source => File.read("#{Chef::Config[:file_cache_path]}/linux_os.xml")
+)
+zbx.configurations.import(
+    :format => "xml",
+    :rules => {
+      :templates => {
+          :createMissing => true,
+          :updateExisting => true
+      },
+      :graphs => {
+          :createMissing => true,
+          :updateExisting => true
+      }
+    },
+:source => File.read("#{Chef::Config[:file_cache_path]}/linux_os.xml")
+)
+zbx.configurations.import(
+    :format => "xml",
+    :rules => {
+      :templates => {
+          :createMissing => true,
+          :updateExisting => true
+      },
+      :screens => {
+          :createMissing => true,
+          :updateExisting => true
+      }
+    },
+:source => File.read("#{Chef::Config[:file_cache_path]}/linux_os.xml")
+)
+zbx.configurations.import(
+    :format => "xml",
+    :rules => {
+      :templates => {
+          :createMissing => true,
+          :updateExisting => true
+      },
+      :discoveryRules => {
+          :createMissing => true,
+          :updateExisting => true
+      }
+    },
+:source => File.read("#{Chef::Config[:file_cache_path]}/linux_os.xml")
+)
+  end
 end
