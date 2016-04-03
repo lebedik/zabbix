@@ -54,13 +54,13 @@ end
 
   if node.role?('db-server')
     metadataitem = 'db'
-    idtemp = [10001, zbx.templates.get_id(:host => "d_Mysql_template")]
+    idtemp = [zbx.templates.get_id(:host => "Linux OS"), zbx.templates.get_id(:host => "d_Mysql_template")]
   elsif node.role?('app-server')
     metadataitem = 'app'
-    idtemp = [10001, zbx.templates.get_id(:host => "d_Tomcat_jmx")]
+    idtemp = [zbx.templates.get_id(:host => "Linux OS"), zbx.templates.get_id(:host => "d_Tomcat_jmx")]
   elsif node.role?('web-server')
     metadataitem = 'web'
-    idtemp = [10001]
+    idtemp = [zbx.templates.get_id(:host => "Linux OS"), zbx.templates.get_id(:host => "d_Apache_Template")]
   elsif node.role?('zabbix-srv')
     metadataitem = 'zbx'
   end
