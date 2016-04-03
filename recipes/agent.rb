@@ -111,7 +111,7 @@ if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
         {
           :type => 1,
           :main => 1,
-          :ip => "#{node[:network][:interfaces][:eth1][:addresses].detect{|k,v| v[:family] == "inet" }.first}",
+          :ip => "#{node['ipaddress']}",
           :dns => "#{node['fqdn']}",
           :port => 10050,
           :useip => 1
