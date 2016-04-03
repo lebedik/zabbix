@@ -15,7 +15,7 @@ elsif node.role?('zabbix-srv')
 end
 
 execute 'zabbix_api_install' do
-        command '/opt/chef/embedded/bin/gem install zabbixapi'
+        command 'gem install zabbixapi'
 end
 
   if node['platform_version'].to_i >= 7
