@@ -171,7 +171,7 @@ end
   # Add apache status config
   if node.role?('web-server')
     cookbook_file '/etc/httpd/sites-enabled/000_apache_status.conf' do
-      source '000_apache_status.conf'
+      source '000-apache-status.conf'
       owner 'apache'
       group 'apache'
       mode 00644
