@@ -224,5 +224,31 @@ end
       mode 00644
       notifies :restart, 'service[zabbix-agent]', :delayed
     end
+  elsif node.role?('db-server')
+
+    directory '/etc/zabbix/scripts' do
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00755
+      recursive true
+      action :create
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    cookbook_file '/etc/zabbix_agent.d/mysql_status.conf' do
+      source 'mysql_status.conf'
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00644
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    cookbook_file '/etc/zabbix/scripts/mysql-status.sh' do
+      source 'mysql-status.sh'
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00755
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
   end
 end
