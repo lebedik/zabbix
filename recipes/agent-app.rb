@@ -1,7 +1,7 @@
 if node['platform'] == 'centos'
 
 hostname = node['fqdn']
-zabbix_srv_hostname = node['epc-provisioning']['instances'].find { |i| i[1]['role'] == 'zabbix' }[1]['private_ip_address']
+zabbix_srv_hostname = search('node', "name:zabbix-srv").first['ipaddress']
 
 if node.role?('db-server')
   metadataitem = 'db'
@@ -173,13 +173,13 @@ end
   group "zabbix"
   action :create
  end
- 
- directory '/etc/zabbix/scripts' do		
-  owner 'zabbix'		
-  group 'zabbix'		
-  mode 00755		
-  recursive true		
-  action :create		
+
+ directory '/etc/zabbix/scripts' do
+  owner 'zabbix'
+  group 'zabbix'
+  mode 00755
+  recursive true
+  action :create
 end
 
  file "#{node['zabbix']['agent']['TLSPSKFile']}" do
@@ -205,40 +205,40 @@ end
         }) }
     notifies :restart, 'service[zabbix-agent]', :delayed
   end
-  
-   # Add apache status config		
-  if node.role?('web-server')		
-    cookbook_file '/etc/httpd/sites-enabled/000_apache_status.conf' do		
-      source '000-apache-status.conf'		
-      owner 'apache'		
-      group 'apache'		
-      mode 00644		
-      notifies :restart, 'service[zabbix-agent]', :delayed		
-    end		
-		
-    directory '/etc/zabbix/scripts' do		
-      owner 'zabbix'		
-      group 'zabbix'		
-      mode 00755		
-      recursive true		
-      action :create		
-      notifies :restart, 'service[zabbix-agent]', :delayed		
-    end		
-		
-    cookbook_file '/etc/zabbix/scripts/zapache' do		
-      source 'zapache'		
-      owner 'zabbix'		
-      group 'zabbix'		
-      mode 00755		
-      notifies :restart, 'service[zabbix-agent]', :delayed		
-    end		
-		
-    cookbook_file '/etc/zabbix/zabbix_agentd.d/userparameter_zapache.conf' do		
-      source 'userparameter_zapache.conf'		
-      owner 'zabbix'		
-      group 'zabbix'		
-      mode 00644		
-      notifies :restart, 'service[zabbix-agent]', :delayed		
-    end		
+
+   # Add apache status config
+  if node.role?('web-server')
+    cookbook_file '/etc/httpd/sites-enabled/000_apache_status.conf' do
+      source '000-apache-status.conf'
+      owner 'apache'
+      group 'apache'
+      mode 00644
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    directory '/etc/zabbix/scripts' do
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00755
+      recursive true
+      action :create
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    cookbook_file '/etc/zabbix/scripts/zapache' do
+      source 'zapache'
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00755
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
+
+    cookbook_file '/etc/zabbix/zabbix_agentd.d/userparameter_zapache.conf' do
+      source 'userparameter_zapache.conf'
+      owner 'zabbix'
+      group 'zabbix'
+      mode 00644
+      notifies :restart, 'service[zabbix-agent]', :delayed
+    end
   end
 end
