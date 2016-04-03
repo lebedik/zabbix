@@ -53,7 +53,7 @@ function usage()
 
 if [[ $# ==  1 ]];then
 	#Agent Mode
-	STATUS_URL="http://localhost/server-status?auto"
+	STATUS_URL="http://localhost:88/server-status?auto"
 	CASE_VALUE="$1"
 elif [[ $# == 2 ]];then
 	#External Script Mode
