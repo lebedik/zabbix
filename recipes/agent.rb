@@ -152,6 +152,14 @@ end
   action :create
  end
 
+-directory '/etc/zabbix/scripts' do		
+-  owner 'zabbix'		
+-  group 'zabbix'		
+-  mode 00755		
+-  recursive true		
+-  action :create		
+-end
+
  file "#{node['zabbix']['agent']['TLSPSKFile']}" do
   owner "zabbix"
   group "zabbix"
