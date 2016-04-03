@@ -235,7 +235,7 @@ end
       notifies :restart, 'service[zabbix-agent]', :delayed
     end
 
-    cookbook_file '/etc/zabbix_agent.d/mysql_status.conf' do
+    cookbook_file '/etc/zabbix/zabbix_agent.d/mysql_status.conf' do
       source 'mysql_status.conf'
       owner 'zabbix'
       group 'zabbix'
