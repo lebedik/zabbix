@@ -1,7 +1,7 @@
 if node['platform'] == 'centos'
 
 hostname = node['fqdn']
-zabbix_srv_hostname = node['epc-provisioning']['instances'].find { |i| i[1]['role'] == 'zabbix-srv' }[0]
+zabbix_srv_hostname = node['epc-provisioning']['instances'].find { |i| i[1]['role'] == 'zabbix-srv' }[1]['private_ip_address']
 
 
 if node.role?('db-server')
