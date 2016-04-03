@@ -1,7 +1,6 @@
 if node['platform'] == 'centos'
 
 hostname = node['fqdn']
-
 zabbix_srv_hostname = search('node', "name:zabbix-srv").first['ipaddress']
 
 if node.role?('db-server')
@@ -39,33 +38,49 @@ end
     subscribes :install, "remote_file[#{zabbix_release}]"
   end
 
-# Create host on zabbix server
-ruby_block "create_host" do
-  block do
-require "zabbixapi"
+  ruby_block "find_id_template_and_create" do
+    block do
 
-zbx = ZabbixApi.connect(
-  :url => "http://#{zabbix_srv_hostname}/api_jsonrpc.php",
-  :user => 'Admin',
-  :password => 'zabbix'
-)
+      require "zabbixapi"
+      zbx = ZabbixApi.connect(
+        :url => "http://#{zabbix_srv_hostname}/api_jsonrpc.php",
+        :user => 'Admin',
+        :password => 'zabbix'
+      )
+
+      zbx.templates.get_id(:host => "d_Mysql_template")
+      zbx.templates.get_id(:host => "d_Tomcat_jmx")
+
+
+  if node.role?('db-server')
+    metadataitem = 'db'
+    idtemp = [10001, zbx.templates.get_id(:host => "d_Mysql_template")]
+  elsif node.role?('app-server')
+    metadataitem = 'app'
+    idtemp = [10001, zbx.templates.get_id(:host => "d_Tomcat_jmx")]
+  elsif node.role?('web-server')
+    metadataitem = 'web'
+    idtemp = [10001]
+  elsif node.role?('zabbix-srv')
+    metadataitem = 'zbx'
+  end
+
+        Chef::Log.info ("================================")
+        Chef::Log.info (idtemp)
+        Chef::Log.info ("================================")
+
+# Create host on zabbix server
+
 
 # create group
-if zbx.hostgroups.get_id(:name => "global-group") == nil
+if zbx.hostgroups.get_id(:name => "#{metadataitem}") == nil
   Chef::Log.info ("================================")
-  Chef::Log.info ("create global-group")
-  Chef::Log.info ("#{zabbix_srv_hostname}")
+  Chef::Log.info ("Create #{metadataitem} group")
   Chef::Log.info ("================================")
-  zbx.hostgroups.create(:name => "global-group")
+  zbx.hostgroups.create(:name => "#{metadataitem}")
 end
 
 # create hosts
-Chef::Log.info ("================================")
-Chef::Log.info (zbx.hosts.get_id(:host => "#{node['fqdn']}"))
-Chef::Log.info ("================================")
-
-
-
 if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
 
   zbx.hosts.delete zbx.hosts.get_id(:host => "#{node['fqdn']}")
@@ -82,12 +97,17 @@ if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
         :useip => 1
       }
     ],
-    :groups => [ :groupid => zbx.hostgroups.get_id(:name => "global-group") ]
+    :groups => [ :groupid => zbx.hostgroups.get_id(:name => "#{metadataitem}") ]
   )
+  zbx.templates.mass_add(
+    :hosts_id => [zbx.hosts.get_id(:host => "#{node['fqdn']}")],
+    :templates_id => idtemp
+  )
+
 
   zbx.templates.mass_add(
     :hosts_id => [zbx.hosts.get_id(:host => "#{node['fqdn']}")],
-    :templates_id => [10001]
+    :templates_id => idtemp
   )
   else
     zbx.hosts.create(
@@ -102,13 +122,15 @@ if (zbx.hosts.get_id(:host => "#{node['fqdn']}")) != nil
           :useip => 1
         }
       ],
-      :groups => [ :groupid => zbx.hostgroups.get_id(:name => "global-group") ]
+      :groups => [ :groupid => zbx.hostgroups.get_id(:name => "#{metadataitem}") ]
     )
+
 
     zbx.templates.mass_add(
       :hosts_id => [zbx.hosts.get_id(:host => "#{node['fqdn']}")],
-      :templates_id => [10001]
+      :templates_id => idtemp
     )
+
 
 end
   end
@@ -136,7 +158,7 @@ end
   action :create
  end
 
-directory '/etc/zabbix/scripts' do
+ directory '/etc/zabbix/scripts' do
   owner 'zabbix'
   group 'zabbix'
   mode 00755
@@ -168,7 +190,7 @@ end
     notifies :restart, 'service[zabbix-agent]', :delayed
   end
 
-  # Add apache status config
+   # Add apache status config
   if node.role?('web-server')
     cookbook_file '/etc/httpd/sites-enabled/000_apache_status.conf' do
       source '000-apache-status.conf'
@@ -203,5 +225,4 @@ end
       notifies :restart, 'service[zabbix-agent]', :delayed
     end
   end
-
 end
