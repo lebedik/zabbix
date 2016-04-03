@@ -1,6 +1,7 @@
 # Install zabbixapi gem
-execute 'zabbix_api_install' do
-  command '/opt/chef/embedded/bin/gem install zabbixapi'
+gem_package 'zabbixapi' do
+  gem_binary '/opt/chef/embedded/bin/gem'
+  action :install
 end
 
 
@@ -14,7 +15,7 @@ ruby_block "import_template" do
 block do
 require "zabbixapi"
 zbx = ZabbixApi.connect(
-  :url => "http://#{node['zabbix']['zabbixServerAddress']}/api_jsonrpc.php",
+  :url => "http://#{node['ipaddress']}/api_jsonrpc.php",
   :user => 'Admin',
   :password => 'zabbix'
 )
