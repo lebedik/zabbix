@@ -44,7 +44,7 @@ ruby_block "create_host" do
 require "zabbixapi"
 
 zbx = ZabbixApi.connect(
-  :url => "http://#{node['zabbix']['zabbixServerAddress']}/api_jsonrpc.php",
+  :url => "http://#{zabbix_srv_hostname}/api_jsonrpc.php",
   :user => 'Admin',
   :password => 'zabbix'
 )
