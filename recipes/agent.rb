@@ -14,8 +14,9 @@ elsif node.role?('zabbix-srv')
   metadataitem = 'zbx'
 end
 
-execute 'zabbix_api_install' do
-        command 'gem install zabbixapi'
+gem_package 'zabbixapi' do
+  gem_binary '/opt/chef/embedded/bin/gem'
+  action :install
 end
 
   if node['platform_version'].to_i >= 7
