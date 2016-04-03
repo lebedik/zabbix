@@ -53,6 +53,7 @@ zbx = ZabbixApi.connect(
 if zbx.hostgroups.get_id(:name => "global-group") == nil
   Chef::Log.info ("================================")
   Chef::Log.info ("create global-group")
+  Chef::Log.info ("#{zabbix_srv_hostname}")
   Chef::Log.info ("================================")
   zbx.hostgroups.create(:name => "global-group")
 end
