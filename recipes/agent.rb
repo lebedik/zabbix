@@ -1,6 +1,7 @@
 if node['platform'] == 'centos'
 
 hostname = node['fqdn']
+zabbix_srv_hostname = node['epc-provisioning']['instances'].find { |i| i[1]['role'] == 'zabbix-srv' }[0]
 
 if node.role?('db-server')
   metadataitem = 'db'
@@ -54,7 +55,7 @@ end
   group "zabbix"
   action :create
  end
- 
+
  file "#{node['zabbix']['agent']['TLSPSKFile']}" do
   owner "zabbix"
   group "zabbix"
@@ -71,7 +72,7 @@ end
     variables lazy { ({
       :metadataitem => metadataitem,
       :hostname => hostname,
-      :server_ip => "#{node['zabbix']['zabbixServerAddress']}",
+      :server_ip => zabbix_srv_hostname,
       :TLSPSKIdentity => "#{node['zabbix']['agent']['TLSPSKIdentity']}",
       :TLSPSKFile => "#{node['zabbix']['agent']['TLSPSKFile']}",
       :encryption => "#{node['zabbix']['agent']['encryption']}"
